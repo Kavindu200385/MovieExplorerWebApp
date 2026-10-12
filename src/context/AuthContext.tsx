@@ -14,6 +14,7 @@ interface AuthContextValue {
   user: User | null
   isAuthenticated: boolean
   login: (username: string, password: string) => boolean
+  signup: (username: string, email: string, password: string) => boolean
   logout: () => void
 }
 
@@ -31,11 +32,15 @@ export default function AuthProvider({ children }: PropsWithChildren) {
       user,
       isAuthenticated: Boolean(user),
       login: (username, password) => {
-        const isValid = username === "demo" && password === "movie123"
+        const isValid = username === "demo" && password === "demo123"
         if (isValid) {
           setUser({ username })
         }
         return isValid
+      },
+      signup: (username) => {
+        setUser({ username })
+        return true
       },
       logout: () => setUser(null),
     }),

@@ -1,6 +1,5 @@
 import { Box } from "@mui/material"
 import type { Video } from "../api/types"
-import EmptyState from "./EmptyState"
 
 interface TrailerPlayerProps {
   videos: Video[]
@@ -13,14 +12,7 @@ export default function TrailerPlayer({ videos }: TrailerPlayerProps) {
   )
   const trailer = trailers.find((video) => video.official) ?? trailers[0]
 
-  if (!trailer) {
-    return (
-      <EmptyState
-        description="There isn’t an official YouTube trailer available yet."
-        title="Trailer coming soon"
-      />
-    )
-  }
+  if (!trailer) return null
 
   return (
     <Box
@@ -33,11 +25,11 @@ export default function TrailerPlayer({ videos }: TrailerPlayerProps) {
       }}
     >
       <Box
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
         allowFullScreen
         component="iframe"
         loading="lazy"
-        src={`https://www.youtube-nocookie.com/embed/${trailer.key}`}
+        src={`https://www.youtube-nocookie.com/embed/${trailer.key}?playsinline=1`}
         sx={{ border: 0, height: "100%", width: "100%" }}
         title={`${trailer.name} trailer`}
       />

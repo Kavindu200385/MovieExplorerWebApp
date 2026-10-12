@@ -1,4 +1,5 @@
-import { Box, CircularProgress, Skeleton, Stack } from "@mui/material"
+import { Box, CircularProgress, Stack } from "@mui/material"
+import MovieSkeleton from "./MovieSkeleton"
 
 interface LoaderProps {
   variant?: "page" | "grid"
@@ -35,15 +36,7 @@ export default function Loader({ variant = "page", count = 12 }: LoaderProps) {
       }}
     >
       {Array.from({ length: count }, (_, index) => (
-        <Stack key={index} spacing={1}>
-          <Skeleton
-            animation="wave"
-            sx={{ aspectRatio: "2 / 3", transform: "none" }}
-            variant="rounded"
-          />
-          <Skeleton width="80%" />
-          <Skeleton width="32%" />
-        </Stack>
+        <MovieSkeleton key={index} />
       ))}
     </Box>
   )

@@ -68,7 +68,7 @@ export default function MovieProvider({ children }: PropsWithChildren) {
   const [error, setError] = useState<AppError | null>(null)
   const [retryKey, setRetryKey] = useState(0)
   const requestId = useRef(0)
-  const debouncedQuery = useDebounce(query.trim(), 400)
+  const debouncedQuery = useDebounce(query.trim(), 500)
 
   useEffect(() => {
     const controller = new AbortController()

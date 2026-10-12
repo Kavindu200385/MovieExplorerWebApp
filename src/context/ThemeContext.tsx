@@ -16,11 +16,17 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined)
 
+const systemDefault: PaletteMode =
+  typeof window !== "undefined" &&
+  window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light"
+
 /** Provides the persisted color mode and generated cinematic MUI theme. */
 export default function ThemeProvider({ children }: PropsWithChildren) {
   const [mode, setMode] = useLocalStorage<PaletteMode>(
     "movie-explorer-theme",
-    "dark",
+    systemDefault,
   )
   const theme = useMemo(() => createMovieTheme(mode), [mode])
   const value = useMemo(

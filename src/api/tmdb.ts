@@ -120,10 +120,46 @@ export async function discoverMovies(
   return data
 }
 
+/** Loads movies currently in theatres. */
+export async function getNowPlayingMovies(
+  page = 1,
+  signal?: AbortSignal,
+) {
+  const { data } = await tmdb.get<PaginatedMovieResponse>(
+    "/movie/now_playing",
+    { params: { page }, signal },
+  )
+  return data
+}
+
+/** Loads movies sorted by overall rating. */
+export async function getTopRatedMovies(
+  page = 1,
+  signal?: AbortSignal,
+) {
+  const { data } = await tmdb.get<PaginatedMovieResponse>(
+    "/movie/top_rated",
+    { params: { page }, signal },
+  )
+  return data
+}
+
+/** Loads movies sorted by current popularity. */
+export async function getPopularMovies(
+  page = 1,
+  signal?: AbortSignal,
+) {
+  const { data } = await tmdb.get<PaginatedMovieResponse>(
+    "/movie/popular",
+    { params: { page }, signal },
+  )
+  return data
+}
+
 /** Loads a movie and its credits and videos in one request. */
 export async function getMovieDetails(id: number, signal?: AbortSignal) {
   const { data } = await tmdb.get<MovieDetailsResponse>(`/movie/${id}`, {
-    params: { append_to_response: "credits,videos" },
+    params: { append_to_response: "credits,videos,reviews" },
     signal,
   })
   return data

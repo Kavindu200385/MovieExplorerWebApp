@@ -60,7 +60,7 @@ const loginPosters = [
   },
 ]
 
-/** Authenticates the demo account in the uploaded futuristic split-screen design. */
+/** Full-page login screen for the demo account (username: demo, password: demo123). */
 export default function LoginPage() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
@@ -249,7 +249,7 @@ export default function LoginPage() {
                   textAlign: "right",
                 }}
               >
-                Demo account: demo / movie123
+                Demo account: demo / demo123
               </Typography>
               {error && <Alert severity="error">{error}</Alert>}
               <TextField
@@ -349,6 +349,27 @@ export default function LoginPage() {
               >
                 Login
               </Button>
+              <Typography
+                sx={{
+                  textAlign: "center",
+                  fontSize: "0.78rem",
+                  color: "rgba(255,255,255,0.55)",
+                }}
+              >
+                Don't have an account?{" "}
+                <Box
+                  component="span"
+                  onClick={() => navigate("/signup")}
+                  sx={{
+                    color: "#b7ddff",
+                    cursor: "pointer",
+                    fontWeight: 600,
+                    "&:hover": { textDecoration: "underline" },
+                  }}
+                >
+                  Sign up
+                </Box>
+              </Typography>
             </Stack>
           </Paper>
         </Stack>

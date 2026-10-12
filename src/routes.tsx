@@ -5,7 +5,9 @@ import FavoritesPage from "./pages/FavoritesPage"
 import HomePage from "./pages/HomePage"
 import LoginPage from "./pages/LoginPage"
 import MovieDetailsPage from "./pages/MovieDetailsPage"
+import MoviesPage from "./pages/MoviesPage"
 import NotFoundPage from "./pages/NotFoundPage"
+import SignupPage from "./pages/SignupPage"
 
 /** Declares all public and protected routes using React Router data mode. */
 export const router = createBrowserRouter([
@@ -14,15 +16,18 @@ export const router = createBrowserRouter([
     Component: LoginPage,
   },
   {
-    Component: ProtectedRoute,
+    path: "/signup",
+    Component: SignupPage,
+  },
+  {
+    Component: AppLayout,
     children: [
+      { index: true, Component: HomePage },
+      { path: "movies", Component: MoviesPage },
+      { path: "movie/:id", Component: MovieDetailsPage },
       {
-        Component: AppLayout,
-        children: [
-          { index: true, Component: HomePage },
-          { path: "movie/:id", Component: MovieDetailsPage },
-          { path: "favorites", Component: FavoritesPage },
-        ],
+        Component: ProtectedRoute,
+        children: [{ path: "favorites", Component: FavoritesPage }],
       },
     ],
   },

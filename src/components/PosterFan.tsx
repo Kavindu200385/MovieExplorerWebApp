@@ -52,8 +52,8 @@ export default function PosterFan({ movies }: PosterFanProps) {
     <Box
       component="section"
       sx={{
-        bgcolor: "common.black",
-        color: "common.white",
+        bgcolor: "background.default",
+        color: "text.primary",
         overflow: "hidden",
         py: { xs: 10, md: 16 },
       }}

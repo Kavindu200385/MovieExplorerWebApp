@@ -7,6 +7,7 @@ import CastList from "../components/CastList"
 import ErrorMessage from "../components/ErrorMessage"
 import Loader from "../components/Loader"
 import MovieDetails from "../components/MovieDetails"
+import ReviewsSection from "../components/ReviewsSection"
 import TrailerPlayer from "../components/TrailerPlayer"
 
 /** Fetches and composes the full movie profile route. */
@@ -83,19 +84,29 @@ export default function MovieDetailsPage() {
             </Typography>
             <CastList cast={movie.credits?.cast ?? []} />
           </Box>
+          {movie.videos?.results?.some(
+            (v) => v.site === "YouTube" && v.type === "Trailer",
+          ) && (
+            <Box component="section">
+              <Typography
+                color="primary"
+                fontWeight={800}
+                letterSpacing="0.12em"
+                variant="overline"
+              >
+                WATCH
+              </Typography>
+              <Typography component="h2" sx={{ mb: 3 }} variant="h3">
+                Official trailer
+              </Typography>
+              <TrailerPlayer videos={movie.videos.results} />
+            </Box>
+          )}
           <Box component="section">
-            <Typography
-              color="primary"
-              fontWeight={800}
-              letterSpacing="0.12em"
-              variant="overline"
-            >
-              WATCH
-            </Typography>
-            <Typography component="h2" sx={{ mb: 3 }} variant="h3">
-              Official trailer
-            </Typography>
-            <TrailerPlayer videos={movie.videos?.results ?? []} />
+            <ReviewsSection
+              movieId={movie.id}
+              tmdbReviews={movie.reviews?.results ?? []}
+            />
           </Box>
         </Stack>
       </Container>

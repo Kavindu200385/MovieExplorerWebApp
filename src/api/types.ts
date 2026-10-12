@@ -32,6 +32,18 @@ export interface Video {
   type: string
 }
 
+export interface Review {
+  id: string
+  author: string
+  author_details: {
+    avatar_path: string | null
+    rating: number | null
+    username: string
+  }
+  content: string
+  created_at: string
+}
+
 export interface MovieDetailsResponse extends MovieSummary {
   genres: Genre[]
   runtime: number | null
@@ -40,6 +52,9 @@ export interface MovieDetailsResponse extends MovieSummary {
   }
   videos: {
     results: Video[]
+  }
+  reviews: {
+    results: Review[]
   }
 }
 

@@ -2,8 +2,11 @@ import { useState } from "react"
 import {
   FavoriteBorderRounded,
   HomeRounded,
+  LocalMoviesRounded,
+  LoginRounded,
   LogoutRounded,
   MenuRounded,
+  PersonAddAltRounded,
 } from "@mui/icons-material"
 import {
   AppBar,
@@ -30,7 +33,7 @@ import ThemeToggle from "./ThemeToggle"
 /** Provides reference-style desktop and compact mobile navigation. */
 export default function Navbar() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-  const { logout } = useAuth()
+  const { isAuthenticated, logout } = useAuth()
   const { favorites } = useFavorites()
   const navigate = useNavigate()
   const location = useLocation()
@@ -42,7 +45,7 @@ export default function Navbar() {
   }
 
   const navButtonSx = (path: string) => ({
-    color: location.pathname === path ? "common.white" : "text.secondary",
+    color: location.pathname === path ? "text.primary" : "text.secondary",
     "&::after": {
       content: '""',
       position: "absolute",
@@ -102,6 +105,7 @@ export default function Navbar() {
             </Typography>
           </Stack>
 
+          {/* Desktop nav links */}
           <Stack
             direction="row"
             spacing={1}
@@ -117,30 +121,68 @@ export default function Navbar() {
             </Button>
             <Button
               component={NavLink}
-              startIcon={
-                <Badge badgeContent={favorites.length} color="primary">
-                  <FavoriteBorderRounded />
-                </Badge>
-              }
-              sx={navButtonSx("/favorites")}
-              to="/favorites"
+              startIcon={<LocalMoviesRounded />}
+              sx={navButtonSx("/movies")}
+              to="/movies"
             >
-              Favorites
+              Movies
             </Button>
+            {isAuthenticated && (
+              <Button
+                component={NavLink}
+                startIcon={
+                  <Badge badgeContent={favorites.length} color="primary">
+                    <FavoriteBorderRounded />
+                  </Badge>
+                }
+                sx={navButtonSx("/favorites")}
+                to="/favorites"
+              >
+                Favorites
+              </Button>
+            )}
           </Stack>
 
           <Box sx={{ flexGrow: 1 }} />
           <ThemeToggle />
-          <Tooltip title="Log out">
-            <IconButton
-              aria-label="Log out"
-              color="inherit"
-              onClick={handleLogout}
-              sx={{ display: { xs: "none", md: "inline-flex" }, ml: 0.5 }}
+
+          {/* Desktop auth controls */}
+          {isAuthenticated ? (
+            <Tooltip title="Log out">
+              <IconButton
+                aria-label="Log out"
+                color="inherit"
+                onClick={handleLogout}
+                sx={{ display: { xs: "none", md: "inline-flex" }, ml: 0.5 }}
+              >
+                <LogoutRounded />
+              </IconButton>
+            </Tooltip>
+          ) : (
+            <Stack
+              direction="row"
+              spacing={1}
+              sx={{ display: { xs: "none", md: "flex" }, ml: 1 }}
             >
-              <LogoutRounded />
-            </IconButton>
-          </Tooltip>
+              <Button
+                onClick={() => navigate("/login")}
+                size="small"
+                sx={{ color: "text.primary" }}
+                variant="text"
+              >
+                Log in
+              </Button>
+              <Button
+                onClick={() => navigate("/signup")}
+                size="small"
+                variant="contained"
+              >
+                Sign up
+              </Button>
+            </Stack>
+          )}
+
+          {/* Mobile hamburger */}
           <IconButton
             aria-label="Open navigation menu"
             color="inherit"
@@ -171,24 +213,67 @@ export default function Navbar() {
             <MenuItem
               onClick={() => {
                 setAnchorEl(null)
-                navigate("/favorites")
+                navigate("/movies")
               }}
-              selected={location.pathname === "/favorites"}
+              selected={location.pathname === "/movies"}
             >
               <ListItemIcon>
-                <Badge badgeContent={favorites.length} color="primary">
-                  <FavoriteBorderRounded fontSize="small" />
-                </Badge>
+                <LocalMoviesRounded fontSize="small" />
               </ListItemIcon>
-              Favorites
+              Movies
             </MenuItem>
+            {isAuthenticated && (
+              <MenuItem
+                onClick={() => {
+                  setAnchorEl(null)
+                  navigate("/favorites")
+                }}
+                selected={location.pathname === "/favorites"}
+              >
+                <ListItemIcon>
+                  <Badge badgeContent={favorites.length} color="primary">
+                    <FavoriteBorderRounded fontSize="small" />
+                  </Badge>
+                </ListItemIcon>
+                Favorites
+              </MenuItem>
+            )}
             <Divider />
-            <MenuItem onClick={handleLogout}>
-              <ListItemIcon>
-                <LogoutRounded fontSize="small" />
-              </ListItemIcon>
-              Log out
-            </MenuItem>
+            {isAuthenticated ? (
+              <MenuItem onClick={handleLogout}>
+                <ListItemIcon>
+                  <LogoutRounded fontSize="small" />
+                </ListItemIcon>
+                Log out
+              </MenuItem>
+            ) : (
+              [
+                <MenuItem
+                  key="login"
+                  onClick={() => {
+                    setAnchorEl(null)
+                    navigate("/login")
+                  }}
+                >
+                  <ListItemIcon>
+                    <LoginRounded fontSize="small" />
+                  </ListItemIcon>
+                  Log in
+                </MenuItem>,
+                <MenuItem
+                  key="signup"
+                  onClick={() => {
+                    setAnchorEl(null)
+                    navigate("/signup")
+                  }}
+                >
+                  <ListItemIcon>
+                    <PersonAddAltRounded fontSize="small" />
+                  </ListItemIcon>
+                  Sign up
+                </MenuItem>,
+              ]
+            )}
           </Menu>
         </Toolbar>
       </Container>

@@ -1,6 +1,7 @@
 import {
   AddRounded,
   CheckRounded,
+  CheckCircleOutlineRounded,
   InfoOutlined,
   StarRounded,
 } from "@mui/icons-material"
@@ -9,69 +10,166 @@ import {
   Button,
   Chip,
   Container,
-  Paper,
   Stack,
+  TextField,
   Typography,
 } from "@mui/material"
 import { alpha } from "@mui/material/styles"
+import { useEffect, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { getImageUrl } from "../api/tmdb"
-import EmptyState from "../components/EmptyState"
-import ErrorMessage from "../components/ErrorMessage"
-import Filters from "../components/Filters"
-import LoadMoreButton from "../components/LoadMoreButton"
-import Loader from "../components/Loader"
-import MovieGrid from "../components/MovieGrid"
+import {
+  getNowPlayingMovies,
+  getImageUrl,
+  getPopularMovies,
+  getTopRatedMovies,
+} from "../api/tmdb"
+import type { MovieSummary } from "../api/types"
+import MovieRow from "../components/MovieRow"
 import PosterFan from "../components/PosterFan"
-import SearchBar from "../components/SearchBar"
 import { useFavorites } from "../context/FavoritesContext"
 import { useMovies } from "../context/MovieContext"
-import useInfiniteScroll from "../hooks/useInfiniteScroll"
+import useCountUp from "../hooks/useCountUp"
 
-/** Combines the featured hero, search/discovery controls, and movie catalog. */
+const HERO_INTERVAL_MS = 6000
+
+const STATS = [
+  { displayValue: 2.3, suffix: " M", label: "Current Users" },
+  { displayValue: 47,  suffix: "K",  label: "Online Users"  },
+  { displayValue: 836, suffix: "K",  label: "Pro Users"     },
+  { displayValue: 358, suffix: "K",  label: "New Users"     },
+]
+
+function StatNumber({
+  displayValue,
+  suffix,
+  label,
+  active,
+}: {
+  displayValue: number
+  suffix: string
+  label: string
+  active: boolean
+}) {
+  const count = useCountUp(displayValue, 1800, active)
+  const formatted =
+    displayValue % 1 !== 0 ? count.toFixed(1) : String(Math.round(count))
+  return (
+    <Stack alignItems="center" spacing={1}>
+      <Typography
+        sx={{
+          fontSize: { xs: "3rem", sm: "3.8rem", md: "5rem" },
+          fontWeight: 800,
+          lineHeight: 1,
+          color: "text.primary",
+        }}
+      >
+        {formatted}
+        {suffix}
+      </Typography>
+      <Typography
+        sx={{
+          fontSize: "0.9rem",
+          color: "text.secondary",
+          letterSpacing: "0.04em",
+        }}
+      >
+        {label}
+      </Typography>
+    </Stack>
+  )
+}
+
+/** Fetches a static first-page movie list and tracks its loading state. */
+function useMovieList(
+  fetcher: () => Promise<{ results: MovieSummary[] }>,
+) {
+  const [movies, setMovies] = useState<MovieSummary[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const controller = new AbortController()
+    fetcher()
+      .then((data) => {
+        if (!controller.signal.aborted) {
+          setMovies(data.results)
+          setLoading(false)
+        }
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setLoading(false)
+      })
+    return () => controller.abort()
+  }, [])
+
+  return { movies, loading }
+}
+
+/** Home page: shuffling hero banner, four horizontal category rows, PosterFan, stats, and newsletter. */
 export default function HomePage() {
-  const {
-    trending,
-    genres,
-    results,
-    query,
-    filters,
-    mode,
-    page,
-    totalPages,
-    isLoading,
-    isAppending,
-    error,
-    setSearchQuery,
-    setFilters,
-    resetFilters,
-    loadMore,
-    retry,
-  } = useMovies()
+  const { trending } = useMovies()
   const { isFavorite, toggleFavorite } = useFavorites()
   const navigate = useNavigate()
-  const hero =
-    trending.find((movie) => movie.backdrop_path && movie.overview) ??
-    trending[0]
+
+  const heroMovies = trending
+    .filter((m) => m.backdrop_path && m.overview)
+    .slice(0, 5)
+
+  const [heroIndex, setHeroIndex] = useState(0)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const [email, setEmail] = useState("")
+  const [subscribed, setSubscribed] = useState(false)
+  const [statsActive, setStatsActive] = useState(false)
+  const statsRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    const el = statsRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setStatsActive(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.3 },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  const startTimer = () => {
+    if (intervalRef.current) clearInterval(intervalRef.current)
+    intervalRef.current = setInterval(() => {
+      setHeroIndex((prev) => (prev + 1) % Math.max(heroMovies.length, 1))
+    }, HERO_INTERVAL_MS)
+  }
+
+  useEffect(() => {
+    if (!heroMovies.length) return
+    setHeroIndex(0)
+    startTimer()
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current)
+    }
+    // heroMovies.length is the right dependency — restart when list populates
+  }, [heroMovies.length])
+
+  const goToSlide = (index: number) => {
+    setHeroIndex(index)
+    startTimer()
+  }
+
+  const hero = heroMovies[heroIndex] ?? heroMovies[0]
   const heroBackdrop = getImageUrl(hero?.backdrop_path, "original")
   const heroFavorite = hero ? isFavorite(hero.id) : false
-  const hasMore = mode !== "idle" && page < totalPages
-  const sentinelRef = useInfiniteScroll({
-    enabled: hasMore && !isLoading && !isAppending,
-    onLoadMore: loadMore,
-  })
-  const displayedMovies = mode === "idle" ? trending : results
-  const showInitialSkeleton =
-    isLoading || (mode === "idle" && !trending.length && !error)
-  const heading =
-    mode === "search"
-      ? `Search results for “${query.trim()}”`
-      : mode === "discover"
-        ? "Filtered movies"
-        : "Trending movies"
+
+  const nowPlaying = useMovieList(() => getNowPlayingMovies(1))
+  const topRated = useMovieList(() => getTopRatedMovies(1))
+  const popular = useMovieList(() => getPopularMovies(1))
 
   return (
     <Box component="main">
+      {/* ── Hero ── */}
       <Box
         sx={{
           minHeight: { xs: 700, md: 860 },
@@ -80,10 +178,12 @@ export default function HomePage() {
           position: "relative",
           bgcolor: "common.black",
           color: "common.white",
+          overflow: "hidden",
         }}
       >
         {heroBackdrop && (
           <Box
+            key={hero?.id}
             aria-hidden
             component="img"
             src={heroBackdrop}
@@ -94,6 +194,11 @@ export default function HomePage() {
               height: "100%",
               objectFit: "cover",
               objectPosition: { xs: "64% center", md: "74% center" },
+              animation: "heroFadeIn 0.7s ease",
+              "@keyframes heroFadeIn": {
+                from: { opacity: 0 },
+                to: { opacity: 1 },
+              },
             }}
           />
         )}
@@ -183,93 +288,174 @@ export default function HomePage() {
                 </Button>
               </Stack>
             )}
+            {heroMovies.length > 1 && (
+              <Stack direction="row" spacing={1} sx={{ pt: 1 }}>
+                {heroMovies.map((m, i) => (
+                  <Box
+                    key={m.id}
+                    aria-label={`Show ${m.title}`}
+                    component="button"
+                    onClick={() => goToSlide(i)}
+                    sx={{
+                      width: i === heroIndex ? 28 : 8,
+                      height: 8,
+                      borderRadius: 4,
+                      border: "none",
+                      cursor: "pointer",
+                      p: 0,
+                      bgcolor:
+                        i === heroIndex
+                          ? "primary.main"
+                          : alpha("#ffffff", 0.4),
+                      transition: "width 0.3s ease, background-color 0.3s ease",
+                      "&:hover": {
+                        bgcolor:
+                          i === heroIndex
+                            ? "primary.main"
+                            : alpha("#ffffff", 0.7),
+                      },
+                    }}
+                  />
+                ))}
+              </Stack>
+            )}
           </Stack>
         </Container>
       </Box>
 
-      <Container maxWidth="xl" sx={{ pb: 10, bgcolor: "background.default" }}>
-        <Paper
-          elevation={8}
-          sx={{
-            mt: { xs: -4, md: -5 },
-            mb: { xs: 6, md: 8 },
-            p: { xs: 2, md: 2.5 },
-            position: "relative",
-            border: 1,
-            borderColor: "divider",
-            background:
-              "linear-gradient(125deg, rgba(229,9,20,0.08), transparent 48%), #09090a",
-            color: "common.white",
-          }}
-        >
-          <Stack spacing={2}>
-            <SearchBar onChange={setSearchQuery} value={query} />
-            <Filters
-              filters={filters}
-              genres={genres}
-              onChange={setFilters}
-              onReset={resetFilters}
-            />
-          </Stack>
-        </Paper>
-
-        <Stack
-          alignItems={{ sm: "flex-end" }}
-          direction={{ xs: "column", sm: "row" }}
-          justifyContent="space-between"
-          spacing={1}
-          sx={{ mb: 3 }}
-        >
-          <Box>
-            <Typography
-              color="primary"
-              fontWeight={800}
-              letterSpacing="0.12em"
-              variant="overline"
-            >
-              NOW SHOWING
-            </Typography>
-            <Typography component="h2" variant="h3">
-              {heading}
-            </Typography>
-          </Box>
-          {mode !== "idle" && !isLoading && (
-            <Typography color="text.secondary" variant="body2">
-              {displayedMovies.length} movies loaded
-            </Typography>
-          )}
-        </Stack>
-
-        {error ? (
-          <ErrorMessage message={error.message} onRetry={retry} />
-        ) : showInitialSkeleton ? (
-          <Loader count={12} variant="grid" />
-        ) : displayedMovies.length ? (
-          <>
-            <MovieGrid movies={displayedMovies} />
-            {mode !== "idle" && (
-              <>
-                <Box ref={sentinelRef} sx={{ height: 1 }} />
-                <LoadMoreButton
-                  hasMore={hasMore}
-                  loading={isAppending}
-                  onClick={loadMore}
-                />
-              </>
-            )}
-          </>
-        ) : (
-          <EmptyState
-            actionLabel={mode === "discover" ? "Reset filters" : "Clear search"}
-            description="Try a different title or broaden the filters to find more films."
-            onAction={
-              mode === "discover" ? resetFilters : () => setSearchQuery("")
-            }
-            title="No movies found"
-          />
-        )}
+      {/* ── Movie rows ── */}
+      <Container maxWidth="xl" sx={{ pt: { xs: 6, md: 8 }, pb: { xs: 4, md: 6 } }}>
+        <MovieRow
+          title="Trending Movies"
+          movies={trending}
+          loading={!trending.length}
+          onSeeMore={() => navigate("/movies?category=trending")}
+        />
+        <MovieRow
+          title="New Releases"
+          movies={nowPlaying.movies}
+          loading={nowPlaying.loading}
+          onSeeMore={() => navigate("/movies?category=now_playing")}
+        />
+        <MovieRow
+          title="Top Rated"
+          movies={topRated.movies}
+          loading={topRated.loading}
+          onSeeMore={() => navigate("/movies?category=top_rated")}
+        />
+        <MovieRow
+          title="Popular Now"
+          movies={popular.movies}
+          loading={popular.loading}
+          onSeeMore={() => navigate("/movies?category=popular")}
+        />
       </Container>
+
       <PosterFan movies={trending} />
+
+      {/* ── Stats banner ── */}
+      <Box ref={statsRef} sx={{ bgcolor: "background.paper", py: { xs: 7, md: 10 } }}>
+        <Container maxWidth="xl">
+          <Stack alignItems="center" spacing={{ xs: 6, md: 8 }}>
+            <Stack alignItems="center" spacing={0.5}>
+              <Typography
+                sx={{
+                  fontFamily: '"Courier New", monospace',
+                  fontWeight: 700,
+                  fontSize: { xs: "1.4rem", md: "2rem" },
+                  letterSpacing: "0.18em",
+                  textTransform: "uppercase",
+                  color: "text.primary",
+                }}
+              >
+                JOIN NOW
+              </Typography>
+              <Typography
+                sx={{
+                  fontFamily: '"Courier New", monospace',
+                  fontWeight: 700,
+                  fontSize: { xs: "1.4rem", md: "2rem" },
+                  letterSpacing: "0.18em",
+                  textTransform: "uppercase",
+                  color: "text.primary",
+                }}
+              >
+                GET STARTED
+              </Typography>
+            </Stack>
+
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "repeat(2, 1fr)", md: "repeat(4, 1fr)" },
+                gap: { xs: 5, md: 4 },
+                width: "100%",
+                textAlign: "center",
+              }}
+            >
+              {STATS.map((stat) => (
+                <StatNumber key={stat.label} {...stat} active={statsActive} />
+              ))}
+            </Box>
+          </Stack>
+        </Container>
+      </Box>
+
+      {/* ── Newsletter ── */}
+      <Box
+        sx={{
+          bgcolor: "background.paper",
+          background: (theme) =>
+            `linear-gradient(125deg, ${alpha(theme.palette.primary.main, 0.07)}, transparent 48%)`,
+          py: { xs: 6, md: 8 },
+        }}
+      >
+        <Container maxWidth="sm">
+          <Stack alignItems="center" spacing={3} textAlign="center">
+            <Stack spacing={1}>
+              <Typography color="text.primary" variant="h4">
+                Stay in the Loop
+              </Typography>
+              <Typography color="text.secondary">
+                Get the latest trending picks and film news delivered to your inbox.
+              </Typography>
+            </Stack>
+
+            {subscribed ? (
+              <Stack alignItems="center" direction="row" spacing={1}>
+                <CheckCircleOutlineRounded color="primary" />
+                <Typography color="primary" fontWeight={600}>
+                  You're subscribed — thanks!
+                </Typography>
+              </Stack>
+            ) : (
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={1.5}
+                sx={{ width: "100%" }}
+              >
+                <TextField
+                  fullWidth
+                  inputProps={{ "aria-label": "Email address" }}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  size="small"
+                  type="email"
+                  value={email}
+                />
+                <Button
+                  disabled={!email.includes("@")}
+                  onClick={() => setSubscribed(true)}
+                  sx={{ whiteSpace: "nowrap", px: 3 }}
+                  variant="contained"
+                >
+                  Subscribe
+                </Button>
+              </Stack>
+            )}
+          </Stack>
+        </Container>
+      </Box>
     </Box>
   )
 }

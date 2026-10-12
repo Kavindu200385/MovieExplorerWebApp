@@ -14,14 +14,11 @@ export default function MovieGrid({ movies }: MovieGridProps) {
         display: "grid",
         gap: { xs: 2, sm: 2.5, md: 3 },
         gridTemplateColumns: {
-          xs: "repeat(1, minmax(0, 1fr))",
+          xs: "repeat(2, minmax(0, 1fr))",
           sm: "repeat(3, minmax(0, 1fr))",
           md: "repeat(4, minmax(0, 1fr))",
           lg: "repeat(5, minmax(0, 1fr))",
           xl: "repeat(6, minmax(0, 1fr))",
-        },
-        "@media (min-width: 380px) and (max-width: 599px)": {
-          gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
         },
       }}
     >
