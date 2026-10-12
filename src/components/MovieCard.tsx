@@ -18,7 +18,7 @@ import { alpha } from "@mui/material/styles"
 import { useNavigate } from "react-router-dom"
 import { getImageUrl } from "../api/tmdb"
 import type { MovieSummary } from "../api/types"
-import { useFavorites } from "../context/FavoritesContext"
+import { useAuthFavorite } from "../context/FavoritesContext"
 
 interface MovieCardProps {
   movie: MovieSummary
@@ -27,7 +27,7 @@ interface MovieCardProps {
 /** Displays a cinematic poster tile with rating and independent favorite action. */
 export default function MovieCard({ movie }: MovieCardProps) {
   const navigate = useNavigate()
-  const { isFavorite, toggleFavorite } = useFavorites()
+  const { isFavorite, guardedToggle } = useAuthFavorite()
   const favorite = isFavorite(movie.id)
   const poster = getImageUrl(movie.poster_path)
   const year = movie.release_date?.slice(0, 4) || "TBA"
@@ -120,7 +120,7 @@ export default function MovieCard({ movie }: MovieCardProps) {
           }
           onClick={(event) => {
             event.stopPropagation()
-            toggleFavorite(movie)
+            guardedToggle(movie)
           }}
           size="small"
           sx={{

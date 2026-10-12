@@ -26,7 +26,7 @@ import {
 import type { MovieSummary } from "../api/types"
 import MovieRow from "../components/MovieRow"
 import PosterFan from "../components/PosterFan"
-import { useFavorites } from "../context/FavoritesContext"
+import { useAuthFavorite } from "../context/FavoritesContext"
 import { useMovies } from "../context/MovieContext"
 import useCountUp from "../hooks/useCountUp"
 
@@ -107,7 +107,7 @@ function useMovieList(
 /** Home page: shuffling hero banner, four horizontal category rows, PosterFan, stats, and newsletter. */
 export default function HomePage() {
   const { trending } = useMovies()
-  const { isFavorite, toggleFavorite } = useFavorites()
+  const { isFavorite, guardedToggle } = useAuthFavorite()
   const navigate = useNavigate()
 
   const heroMovies = trending
@@ -276,7 +276,7 @@ export default function HomePage() {
                   View details
                 </Button>
                 <Button
-                  onClick={() => toggleFavorite(hero)}
+                  onClick={() => guardedToggle(hero)}
                   startIcon={heroFavorite ? <CheckRounded /> : <AddRounded />}
                   sx={{
                     borderColor: alpha("#ffffff", 0.35),

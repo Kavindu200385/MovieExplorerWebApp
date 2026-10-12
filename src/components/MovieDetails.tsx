@@ -9,7 +9,7 @@ import { Box, Button, Chip, Container, Stack, Typography } from "@mui/material"
 import { alpha } from "@mui/material/styles"
 import { getImageUrl, toMovieSummary } from "../api/tmdb"
 import type { MovieDetailsResponse } from "../api/types"
-import { useFavorites } from "../context/FavoritesContext"
+import { useAuthFavorite } from "../context/FavoritesContext"
 
 interface MovieDetailsProps {
   movie: MovieDetailsResponse
@@ -24,7 +24,7 @@ function formatRuntime(runtime: number | null) {
 
 /** Recreates the reference’s backdrop-led movie profile composition. */
 export default function MovieDetails({ movie }: MovieDetailsProps) {
-  const { isFavorite, toggleFavorite } = useFavorites()
+  const { isFavorite, guardedToggle } = useAuthFavorite()
   const favorite = isFavorite(movie.id)
   const backdrop = getImageUrl(movie.backdrop_path, "original")
   const poster = getImageUrl(movie.poster_path)
@@ -159,7 +159,7 @@ export default function MovieDetails({ movie }: MovieDetailsProps) {
             </Typography>
             <Button
               color={favorite ? "inherit" : "primary"}
-              onClick={() => toggleFavorite(toMovieSummary(movie))}
+              onClick={() => guardedToggle(toMovieSummary(movie))}
               startIcon={favorite ? <CheckRounded /> : <AddRounded />}
               variant={favorite ? "outlined" : "contained"}
             >

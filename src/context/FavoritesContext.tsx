@@ -5,7 +5,9 @@ import {
   useMemo,
   type PropsWithChildren,
 } from "react"
+import { useLocation, useNavigate } from "react-router-dom"
 import type { MovieSummary } from "../api/types"
+import { useAuth } from "./AuthContext"
 import useLocalStorage from "../hooks/useLocalStorage"
 
 interface FavoritesContextValue {
@@ -85,4 +87,25 @@ export function useFavorites() {
     throw new Error("useFavorites must be used within FavoritesProvider")
   }
   return context
+}
+
+/** Like toggleFavorite but redirects to /login when the user is not authenticated. */
+export function useAuthFavorite() {
+  const { toggleFavorite, isFavorite } = useFavorites()
+  const { isAuthenticated } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const guardedToggle = useCallback(
+    (movie: MovieSummary) => {
+      if (!isAuthenticated) {
+        navigate("/login", { state: { from: { pathname: location.pathname } } })
+        return
+      }
+      toggleFavorite(movie)
+    },
+    [isAuthenticated, location.pathname, navigate, toggleFavorite],
+  )
+
+  return { guardedToggle, isFavorite }
 }
