@@ -8,7 +8,7 @@ import type {
   PaginatedMovieResponse,
 } from "./types"
 
-const API_KEY = import.meta.env.REACT_APP_TMDB_KEY
+const API_KEY = import.meta.env.VITE_TMDB_KEY
 const API_BASE_URL = "https://api.themoviedb.org/3"
 const IMAGE_BASE_URL = "https://image.tmdb.org/t/p"
 
