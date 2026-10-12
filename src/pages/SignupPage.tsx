@@ -11,7 +11,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material"
-import { alpha } from "@mui/material/styles"
+import { alpha, type Theme } from "@mui/material/styles"
 import { Navigate, useLocation, useNavigate } from "react-router-dom"
 import ThemeToggle from "../components/ThemeToggle"
 import { useAuth } from "../context/AuthContext"
@@ -58,18 +58,19 @@ const signupPosters = [
   },
 ]
 
-const fieldSx = {
+const fieldSx = (theme: Theme) => ({
   "& .MuiInputLabel-root": {
-    color: "rgba(255,255,255,0.82)",
+    color: "text.primary",
     fontFamily: '"Outfit", sans-serif',
     fontSize: "0.82rem",
   },
-  "& .MuiInput-underline:before": { borderBottomColor: "rgba(255,255,255,0.5)" },
-  "& .MuiInput-underline:after": {
-    borderBottomColor: "#b7ddff",
-    boxShadow: "0 3px 14px rgba(157,215,255,0.75)",
+  "& .MuiInput-underline:before": {
+    borderBottomColor: alpha(theme.palette.text.primary, 0.3),
   },
-}
+  "& .MuiInput-underline:after": {
+    borderBottomColor: theme.palette.primary.main,
+  },
+})
 
 /** New-account registration page mirroring the LoginPage layout. */
 export default function SignupPage() {
@@ -124,7 +125,7 @@ export default function SignupPage() {
         aria-label={label}
         edge="end"
         onClick={toggle}
-        sx={{ color: "rgba(255,255,255,0.72)" }}
+        sx={{ color: "text.secondary" }}
       >
         {visible ? <VisibilityOffOutlined /> : <VisibilityOutlined />}
       </IconButton>
@@ -138,10 +139,9 @@ export default function SignupPage() {
         display: "grid",
         placeItems: "center",
         p: { xs: 2, md: 7 },
-        bgcolor: "#070708",
-        color: "common.white",
-        background:
-          "radial-gradient(circle at 14% 18%, rgba(229,9,20,0.22), transparent 30%), radial-gradient(circle at 86% 78%, rgba(104,188,255,0.15), transparent 26%), #070708",
+        bgcolor: "background.default",
+        background: (theme) =>
+          `radial-gradient(circle at 14% 18%, rgba(229,9,20,0.22), transparent 30%), radial-gradient(circle at 86% 78%, rgba(104,188,255,0.15), transparent 26%), ${theme.palette.background.default}`,
       }}
     >
       <Paper
@@ -154,10 +154,10 @@ export default function SignupPage() {
           py: { xs: 6, md: 7 },
           position: "relative",
           overflow: "hidden",
-          bgcolor: alpha("#050506", 0.94),
-          color: "common.white",
+          bgcolor: "background.paper",
           borderRadius: 0,
-          border: "1px solid rgba(255,255,255,0.09)",
+          border: 1,
+          borderColor: "divider",
         }}
       >
         <Box sx={{ position: "absolute", right: 18, top: 18, zIndex: 5 }}>
@@ -248,13 +248,12 @@ export default function SignupPage() {
               width: { xs: "100%", md: "43%" },
               maxWidth: 470,
               p: { xs: 3, sm: 4.5 },
-              color: "common.white",
-              bgcolor: alpha("#161616", 0.74),
-              border: "1px solid rgba(255,255,255,0.52)",
+              bgcolor: "background.paper",
+              border: 1,
+              borderColor: "divider",
               borderRadius: 2,
               backdropFilter: "blur(18px)",
-              boxShadow:
-                "inset 0 0 42px rgba(255,255,255,0.025), 0 18px 60px rgba(0,0,0,0.55)",
+              boxShadow: 4,
             }}
           >
             <Stack spacing={3}>
@@ -322,25 +321,9 @@ export default function SignupPage() {
               />
               <Button
                 size="small"
-                sx={{
-                  alignSelf: "center",
-                  minWidth: 132,
-                  minHeight: 34,
-                  mt: 1,
-                  color: "common.white",
-                  borderRadius: 999,
-                  border: "1px solid rgba(255,255,255,0.5)",
-                  background:
-                    "linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0.025))",
-                  boxShadow:
-                    "inset 0 0 10px rgba(255,255,255,0.08), 0 0 18px rgba(177,218,255,0.12)",
-                  "&:hover": {
-                    borderColor: "#cce8ff",
-                    boxShadow: "0 0 22px rgba(177,218,255,0.38)",
-                  },
-                }}
+                sx={{ alignSelf: "center", minWidth: 132, mt: 1, borderRadius: 999 }}
                 type="submit"
-                variant="outlined"
+                variant="contained"
               >
                 Create account
               </Button>
@@ -348,7 +331,7 @@ export default function SignupPage() {
                 sx={{
                   textAlign: "center",
                   fontSize: "0.78rem",
-                  color: "rgba(255,255,255,0.55)",
+                  color: "text.secondary",
                 }}
               >
                 Already have an account?{" "}
@@ -356,7 +339,7 @@ export default function SignupPage() {
                   component="span"
                   onClick={() => navigate("/login")}
                   sx={{
-                    color: "#b7ddff",
+                    color: "primary.main",
                     cursor: "pointer",
                     fontWeight: 600,
                     "&:hover": { textDecoration: "underline" },

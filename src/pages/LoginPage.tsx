@@ -121,10 +121,9 @@ export default function LoginPage() {
         display: "grid",
         placeItems: "center",
         p: { xs: 2, md: 7 },
-        bgcolor: "#070708",
-        color: "common.white",
-        background:
-          "radial-gradient(circle at 14% 18%, rgba(229,9,20,0.22), transparent 30%), radial-gradient(circle at 86% 78%, rgba(104,188,255,0.15), transparent 26%), #070708",
+        bgcolor: "background.default",
+        background: (theme) =>
+          `radial-gradient(circle at 14% 18%, rgba(229,9,20,0.22), transparent 30%), radial-gradient(circle at 86% 78%, rgba(104,188,255,0.15), transparent 26%), ${theme.palette.background.default}`,
       }}
     >
       <Paper
@@ -137,10 +136,10 @@ export default function LoginPage() {
           py: { xs: 6, md: 7 },
           position: "relative",
           overflow: "hidden",
-          bgcolor: alpha("#050506", 0.94),
-          color: "common.white",
+          bgcolor: "background.paper",
           borderRadius: 0,
-          border: "1px solid rgba(255,255,255,0.09)",
+          border: 1,
+          borderColor: "divider",
         }}
       >
         <Box sx={{ position: "absolute", right: 18, top: 18, zIndex: 5 }}>
@@ -230,18 +229,17 @@ export default function LoginPage() {
               width: { xs: "100%", md: "43%" },
               maxWidth: 470,
               p: { xs: 3, sm: 4.5 },
-              color: "common.white",
-              bgcolor: alpha("#161616", 0.74),
-              border: "1px solid rgba(255,255,255,0.52)",
+              bgcolor: "background.paper",
+              border: 1,
+              borderColor: "divider",
               borderRadius: 2,
               backdropFilter: "blur(18px)",
-              boxShadow:
-                "inset 0 0 42px rgba(255,255,255,0.025), 0 18px 60px rgba(0,0,0,0.55)",
+              boxShadow: 4,
             }}
           >
             <Stack spacing={3.2}>
               <Typography
-                color={alpha("#ffffff", 0.68)}
+                color="text.secondary"
                 sx={{
                   fontFamily: '"Outfit", sans-serif',
                   fontSize: "0.66rem",
@@ -261,20 +259,19 @@ export default function LoginPage() {
                   setUsername(event.target.value)
                   setError("")
                 }}
-                sx={{
+                sx={(theme) => ({
                   "& .MuiInputLabel-root": {
-                    color: "rgba(255,255,255,0.82)",
+                    color: "text.primary",
                     fontFamily: '"Outfit", sans-serif',
                     fontSize: "0.82rem",
                   },
                   "& .MuiInput-underline:before": {
-                    borderBottomColor: "rgba(255,255,255,0.5)",
+                    borderBottomColor: alpha(theme.palette.text.primary, 0.3),
                   },
                   "& .MuiInput-underline:after": {
-                    borderBottomColor: "#b7ddff",
-                    boxShadow: "0 3px 14px rgba(157,215,255,0.75)",
+                    borderBottomColor: theme.palette.primary.main,
                   },
-                }}
+                })}
                 value={username}
                 variant="standard"
               />
@@ -291,7 +288,7 @@ export default function LoginPage() {
                         }
                         edge="end"
                         onClick={() => setShowPassword((current) => !current)}
-                        sx={{ color: "rgba(255,255,255,0.72)" }}
+                        sx={{ color: "text.secondary" }}
                       >
                         {showPassword ? (
                           <VisibilityOffOutlined />
@@ -307,45 +304,28 @@ export default function LoginPage() {
                   setPassword(event.target.value)
                   setError("")
                 }}
-                sx={{
+                sx={(theme) => ({
                   "& .MuiInputLabel-root": {
-                    color: "rgba(255,255,255,0.82)",
+                    color: "text.primary",
                     fontFamily: '"Outfit", sans-serif',
                     fontSize: "0.82rem",
                   },
                   "& .MuiInput-underline:before": {
-                    borderBottomColor: "rgba(255,255,255,0.5)",
+                    borderBottomColor: alpha(theme.palette.text.primary, 0.3),
                   },
                   "& .MuiInput-underline:after": {
-                    borderBottomColor: "#b7ddff",
-                    boxShadow: "0 3px 14px rgba(157,215,255,0.75)",
+                    borderBottomColor: theme.palette.primary.main,
                   },
-                }}
+                })}
                 type={showPassword ? "text" : "password"}
                 value={password}
                 variant="standard"
               />
               <Button
                 size="small"
-                sx={{
-                  alignSelf: "center",
-                  minWidth: 132,
-                  minHeight: 34,
-                  mt: 1,
-                  color: "common.white",
-                  borderRadius: 999,
-                  border: "1px solid rgba(255,255,255,0.5)",
-                  background:
-                    "linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0.025))",
-                  boxShadow:
-                    "inset 0 0 10px rgba(255,255,255,0.08), 0 0 18px rgba(177,218,255,0.12)",
-                  "&:hover": {
-                    borderColor: "#cce8ff",
-                    boxShadow: "0 0 22px rgba(177,218,255,0.38)",
-                  },
-                }}
+                sx={{ alignSelf: "center", minWidth: 132, mt: 1, borderRadius: 999 }}
                 type="submit"
-                variant="outlined"
+                variant="contained"
               >
                 Login
               </Button>
@@ -353,7 +333,7 @@ export default function LoginPage() {
                 sx={{
                   textAlign: "center",
                   fontSize: "0.78rem",
-                  color: "rgba(255,255,255,0.55)",
+                  color: "text.secondary",
                 }}
               >
                 Don't have an account?{" "}
@@ -361,7 +341,7 @@ export default function LoginPage() {
                   component="span"
                   onClick={() => navigate("/signup")}
                   sx={{
-                    color: "#b7ddff",
+                    color: "primary.main",
                     cursor: "pointer",
                     fontWeight: 600,
                     "&:hover": { textDecoration: "underline" },
