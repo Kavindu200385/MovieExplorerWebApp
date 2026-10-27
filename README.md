@@ -1,6 +1,6 @@
 # Movie Explorer – Discover Your Favorite Films
 
-> Internship assignment — a responsive movie discovery app backed by the TMDb API.
+a responsive movie discovery app backed by the TMDb API.
 
 🔗 **Live Demo:** [https://movie-explorer-beige-delta.vercel.app/](https://movie-explorer-beige-delta.vercel.app/)
 
